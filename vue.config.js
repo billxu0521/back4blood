@@ -3,5 +3,4 @@ module.exports = {
 	    ? '/back4blood/'
 	    : '/',
 	filenameHashing: false
-
 }
