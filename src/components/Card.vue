@@ -52,6 +52,7 @@
                 </el-col>
             </el-row>
             <el-row class="cardfilter">
+              <span>目前總牌數：{{countCard}}/{{allcardcount}}</span>
                 <el-checkbox-group v-model="cardfiltersGroup">
                 <el-checkbox-button v-for="filter in cardfilters" :label="filter" :key="filter">{{filter}}</el-checkbox-button>
                 </el-checkbox-group>
@@ -107,11 +108,11 @@ export default {
       fullWidth: 0,
       fullHeight: 0,
       centerDialogVisible: false,
+      allcardcount : 156,
       cardfilters:CarfiltersOption,
       supplyfilter:supplyfilterOption,
       cardfiltersGroup:["進攻","防禦","實用","機動性","反射","紀律","腕力","運氣"],
       supplyfiltersGroup:["上層補給線","中間補給線","下層補給線","其他"]
-      
     }
   },
   watch:{
@@ -128,13 +129,17 @@ export default {
     cardJsonTypeList () {
         return this.cardJson.map(card => card.Type)
     },
+    countCard (){
+      let count = 0
+      count = this.cardJsonFilter.length
+      return count
+    },
     cardJsonFilter () {
-      let filtercard = this.cardJson.filter((card) => {
-        return this.cardfiltersGroup.indexOf(card.Type) > -1 || this.cardfiltersGroup.indexOf(card.Affinity) > -1
+      var filtercard = this.cardJson.filter((card) => {
+        return this.cardfiltersGroup.indexOf(card.Type) > -1 && this.cardfiltersGroup.indexOf(card.Affinity) > -1
       })
       let resultfiltercard = []
       for(let filteritem of this.supplyfiltersGroup){
-        
         let _filtercard = filtercard.filter((card) => {
           return this.supplyJson[filteritem].indexOf(card.SuppyLine) > -1 
         })
