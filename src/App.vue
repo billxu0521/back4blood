@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    
     <Card/>
   </div>
 </template>
@@ -12,6 +13,13 @@ export default {
   components: {
     Card
   },
+  metaInfo: {
+    title: 'Back4Blood 卡片配置工具',
+    titleTemplate: '%s',
+    htmlAttrs: {
+      lang: 'zh'
+    }
+  }
 }
 </script>
 

@@ -16,6 +16,6 @@ git commit -m 'deploy'
 # 部署到 https://<USERNAME>.github.io/<REPO>
 git push -f git@github.com:billxu0521/back4blood.git master:gh-pages
 Username: billxu0521
-Password: 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
+Password: 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
 
 cd -

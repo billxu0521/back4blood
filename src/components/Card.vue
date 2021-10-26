@@ -1,8 +1,27 @@
 <template>
     <el-container>
-      <el-header class="header"><h2>Back4Blood 牌組模擬器v1.0</h2></el-header>
+      <el-header class="header">
+        <h2>Back4Blood 牌組模擬器v1.1</h2>
+      </el-header>
         <el-container class="content">
             <el-main class="main">
+            <el-button type="text" @click="centerDialogVisible = true">分享牌組</el-button>
+                <el-dialog
+                title="請複製以下資訊"
+                :visible.sync="centerDialogVisible"
+                width="30%"
+                center>
+                <el-input
+                type="textarea"
+                :rows="10"
+                placeholder="请输入内容"
+                v-model="shareCaddSet" >
+                </el-input>
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="centerDialogVisible = false">關閉</el-button>
+                </span>
+            </el-dialog>
+            
             <el-row class="cardresult" :gutter="24">
                 <el-col :span="12">
                 <h4>選擇卡牌：</h4>
@@ -15,20 +34,30 @@
                 </el-row>
                 </el-col>
                 <el-col :span="12">
-                <h4>發動效果：</h4>
-                <div class="selecteffect" v-for="(card,index) in cardselect" :key="index" >
-                    <span style="color:#606266;">{{card.Name}}:</span>
-                    <span :value="index">{{card.EffectDescription}}</span>
-                </div>
+                  <h4>正面增益：</h4>
+                  <div class="selecteffect" v-for="(card,index) in cardselect" :key="'selectedbuff_'+index" >
+                      <span style="color:#606266;" v-if="card.Buff !== 0">{{card.Name}}:</span>
+                      <span :value="'selectedbuff_'+index" v-if="card.Buff !== 0">{{card.Buff}}</span>
+                  </div>  
+                  <h4>負面增益：</h4>
+                  <div class="selecteffect" v-for="(card,index) in cardselect" :key="'selecteddebuff_'+index" >
+                      <span style="color:#606266;" v-if="card.DeBuff !== 0">{{card.Name}}:</span>
+                      <span :value="'selecteddebuff_'+index" v-if="card.DeBuff !== 0">{{card.DeBuff}}</span>
+                  </div>   
+                  <h4>原始發動效果：</h4>
+                  <div class="selecteffect" v-for="(card,index) in cardselect" :key="'selected_'+index" >
+                      <span style="color:#606266;">{{card.Name}}:</span>
+                      <span :value="'selected_'+index">{{card.EffectDescription}}</span>
+                  </div>                 
                 </el-col>
             </el-row>
-            <el-row class="cardfilter" :gutter="24">
-            <div>
+            <el-row class="cardfilter">
                 <el-checkbox-group v-model="cardfiltersGroup">
                 <el-checkbox-button v-for="filter in cardfilters" :label="filter" :key="filter">{{filter}}</el-checkbox-button>
                 </el-checkbox-group>
-            </div>
-      
+                <el-checkbox-group v-model="supplyfiltersGroup">
+                <el-checkbox-button v-for="filter in supplyfilter" :label="filter" :key="filter">{{filter}}</el-checkbox-button>
+                </el-checkbox-group>
             </el-row>
             <el-row class="cardpool" :gutter="24" >
                 <el-col :span="checkCardSpan()" v-for="(card,index) in cardJsonFilter" :key="index">
@@ -37,7 +66,7 @@
                         <span class="cardname">{{card.Name}}</span>
                         </div>
                         <div class="text item supplyline">
-                        補給線:{{card.SuppyLine}}
+                        補給線:{{card.SuppyLine}} 花費點數:<span style="color:red">{{card.CardCost}}</span>
                         </div>
                         <el-row  :gutter="24" >
                             <el-col :span="12" >
@@ -64,37 +93,88 @@
 
 <script>
 import json from '../json/data.json'
-
-console.log(json)
+import supplyline_json from '../json/supplyline.json'
 const CarfiltersOption = ["進攻","防禦","實用","機動性","反射","紀律","腕力","運氣"]
+const supplyfilterOption = ["上層補給線","中間補給線","下層補給線","其他"]
+
 export default {
   name: 'app',
-  
   data() {
     return {
       cardJson: json.rows,
+      supplyJson: supplyline_json[0],
       cardselect:[],
       fullWidth: 0,
       fullHeight: 0,
+      centerDialogVisible: false,
       cardfilters:CarfiltersOption,
-      cardfiltersGroup:["進攻","防禦","實用","機動性","反射","紀律","腕力","運氣"]
+      supplyfilter:supplyfilterOption,
+      cardfiltersGroup:["進攻","防禦","實用","機動性","反射","紀律","腕力","運氣"],
+      supplyfiltersGroup:["上層補給線","中間補給線","下層補給線","其他"]
       
     }
   },
   watch:{
-      cardfiltersGroup(){
-          //this.cardJsonFilter()
-      },
+    supplyfiltersGroup(){
+      
+    },
+    cardfiltersGroup(){
+        //this.cardJsonFilter()
+    },
+    cardJson(){
+    }
   },
   computed: {
     cardJsonTypeList () {
         return this.cardJson.map(card => card.Type)
-    } ,
+    },
     cardJsonFilter () {
-        return this.cardJson.filter(item => {
-            return this.cardfiltersGroup.indexOf(item.Type) > -1 || this.cardfiltersGroup.indexOf(item.Affinity) > -1 
+      let filtercard = this.cardJson.filter((card) => {
+        return this.cardfiltersGroup.indexOf(card.Type) > -1 || this.cardfiltersGroup.indexOf(card.Affinity) > -1
+      })
+      let resultfiltercard = []
+      for(let filteritem of this.supplyfiltersGroup){
+        
+        let _filtercard = filtercard.filter((card) => {
+          return this.supplyJson[filteritem].indexOf(card.SuppyLine) > -1 
         })
-    }
+        resultfiltercard = resultfiltercard.concat(_filtercard)
+      }
+      return resultfiltercard
+    },
+    supplyJsonFilter () {
+      return this.supplyfilter.filter(item =>{
+        return this.cardJson.filter(card => {
+          
+          return this.supplyJson[item].indexOf(card.SuppyLine) > -1 
+        })
+      })
+    },
+    shareCaddSet () {
+        let shareString = ''
+        if(this.cardselect.length === 0) shareString = '請選擇卡片。'
+        shareString += "《分享牌組》\n"
+        this.cardselect.forEach(function(card,index){
+            shareString += index + " " + card.Name + "\n"
+        })
+        shareString += "《正面增益》\n"
+        this.cardselect.forEach(function(card,index){
+          if(card.Buff !== 0){
+            shareString += index + " " + card.Buff + "\n"
+          }
+        })
+        shareString += "《負面增益》\n"
+        this.cardselect.forEach(function(card,index){
+          if(card.DeBuff !== 0){
+            shareString += index + " " + card.DeBuff + "\n"
+          }
+        })
+        shareString += "《全部牌組效果》\n"
+        this.cardselect.forEach(function(card,index){
+            shareString += index + " " + card.EffectDescription + "\n"
+        })
+        return shareString
+    },
   },
   mounted() {
     const vm = this;
@@ -104,8 +184,6 @@ export default {
       vm.fullWidth = window.innerWidth
       vm.fullHeight = window.innerHeight
     }
-
-    console.log(this.cardJsonFilter)
   },
   methods:{
     selectCard(value){
@@ -128,7 +206,6 @@ export default {
       }
     },
     addCard(value){
-      console.log('addcard')
       let _name = value.Name
       if(this.checkCardSelect(_name)) return
       if(this.cardselect.length < 15){
@@ -238,15 +315,16 @@ padding: 2%;
 font-size: 0.9em;
 }
 
-/* 中型設備（臺式電腦，992px 起） */
 @media (max-width: 992px) { 
 .el-col-20{
     width: 100% !important;
 }
+.el-dialog{
+    width: 80vw !important;
+}
 
 }
 
-/* 大型設備（大臺式電腦，1200px 起） */
 @media (min-width: 1200px) { 
 
 
