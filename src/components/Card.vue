@@ -51,14 +51,18 @@
                   </div>                 
                 </el-col>
             </el-row>
-            <el-row class="cardfilter">
-              <span>目前總牌數：{{countCard}}/{{allcardcount}}</span>
+            <span>目前總牌數：{{countCard}}/{{allcardcount}}</span>
+            <el-row class="cardfilter" :gutter="24">
+              <el-col :span="12">
                 <el-checkbox-group v-model="cardfiltersGroup">
                 <el-checkbox-button v-for="filter in cardfilters" :label="filter" :key="filter">{{filter}}</el-checkbox-button>
                 </el-checkbox-group>
+              </el-col>
+              <el-col :span="12">
                 <el-checkbox-group v-model="supplyfiltersGroup">
                 <el-checkbox-button v-for="filter in supplyfilter" :label="filter" :key="filter">{{filter}}</el-checkbox-button>
                 </el-checkbox-group>
+              </el-col>
             </el-row>
             <el-row class="cardpool" :gutter="24" >
                 <el-col :span="checkCardSpan()" v-for="(card,index) in cardJsonFilter" :key="index">
@@ -261,7 +265,7 @@ export default {
 }
 
 .content {
-  height:calc(100vh - 50px);
+  height:calc(100vh - 30px);
   .aside {
     width: 200px;
   }
@@ -270,8 +274,8 @@ export default {
   }
 }
 .cardresult{
-    height: 35vh;
-    max-height: 35vh;
+    height: 25vh;
+    max-height: 25vh;
     overflow: auto;
   }
 
